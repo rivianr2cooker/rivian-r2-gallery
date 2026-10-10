@@ -2,20 +2,20 @@
 
     python tools/harmonize.py   # also runs automatically at the end of tools/tag.py
 
-Per post, for paint (exterior/detail photos) and interior (interior photos): among photos whose
+Per post, for paint and wheels (exterior/detail photos) and interior (interior photos): among photos whose
 own tag is known and at least MIN_TAG confident, the value on the most photos wins; a tie goes
 to the tied value with the single highest confidence. Those photos get the winning value, with
 the highest confidence any photo gave it. A post is left alone when a losing value is on 3+
-photos, or on 2+ photos making up a third of the voters, since that usually means several cars. The photo's own tag is kept in tags.<group>_raw, so
-re-running always starts from the original tags. Unknown or low-confidence tags are left alone.
-Wheels are not harmonized.
+photos, or on 2+ photos making up a third of the voters, since that usually means several cars.
+The photo's own tag is kept in tags.<group>_raw, so re-running always starts from the original
+tags. Unknown or low-confidence tags are left alone.
 """
 from collections import defaultdict
 
 from common import load_images, save_images
 
 MIN_TAG = 0.6  # same as the site's threshold (MIN_TAG in app.js)
-GROUPS = {"paint": ("exterior", "detail"), "interior": ("interior",)}
+GROUPS = {"paint": ("exterior", "detail"), "interior": ("interior",), "wheels": ("exterior", "detail")}
 
 
 def harmonize(doc):

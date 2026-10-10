@@ -6,13 +6,17 @@ const PAGE = 48;
 const SOURCES = { reddit: "Reddit", forum: "Forums" };
 
 const MODES = {
-  exterior: { groups: ["paint"], titles: { paint: "Paint" } },
+  exterior: { groups: ["paint", "wheels"], titles: { paint: "Paint", wheels: "Wheels" } },
   interior: { groups: ["interior"], titles: { interior: "Interior" } },
 };
 
+// Filter buttons: wheels by size only; aftermarket and unknown wheels show under "Any".
+const BUTTONS = { wheels: { "20-black-sand-at": '20"', "21-liquid-tungsten": '21"' } };
+const LIGHTS = { low: "Low", mid: "Mid", high: "High" };  // photos not yet tagged for light show under "Any" only
+
 let OPTIONS, IMAGES = [], LABELS = {};
 const DEFAULT_HIDE = ["forum"];  // sources unticked unless the link says otherwise
-let state = { mode: "exterior", sel: {}, strict: true, hide: new Set(DEFAULT_HIDE) }, shown = 0, lists = { exact: [], partial: [] };
+let state = { mode: "exterior", sel: {}, strict: true, hide: new Set(DEFAULT_HIDE), light: null }, shown = 0, lists = { exact: [], partial: [] };
 
 const $ = (s) => document.querySelector(s);
 const el = (tag, attrs = {}, ...kids) => {
@@ -34,6 +38,7 @@ function known(img, group) {
 function inMode(img, mode) {
   if (state.hide.has(img.source) || img.view === "other" || img.render >= 0.8) return false;  // render: configurator/press/CGI (0.5-0.8 had real photos)
   if (img.pii && (img.pii.face >= 0.5 || img.pii.info >= 0.5)) return false;  // identifiable face or personal info
+  if (state.light && img.light !== state.light) return false;
   if (mode === "interior") return !!known(img, "interior") && img.view !== "exterior";
   return img.view !== "interior" && !!known(img, "paint");
 }
@@ -62,10 +67,13 @@ function readHash() {
   params.delete("hc");
   state.hide = params.has("hide") ? new Set(params.get("hide").split(",").filter((s) => SOURCES[s])) : new Set(DEFAULT_HIDE);
   params.delete("hide");
+  state.light = LIGHTS[params.get("light")] ? params.get("light") : null;
+  params.delete("light");
   state.sel = Object.fromEntries(params);
 }
 function writeHash() {
   const q = new URLSearchParams(Object.entries(state.sel).filter(([g, v]) => v && MODES[state.mode].groups.includes(g)));
+  if (state.light) q.set("light", state.light);
   if (!state.strict) q.set("hc", "0");
   const hide = [...state.hide].sort().join(",");
   if (hide !== [...DEFAULT_HIDE].sort().join(",")) q.set("hide", hide);  // "hide=" means show every source
@@ -92,16 +100,23 @@ function renderFilters() {
     const pick = (v) => () => { state.sel[g] = v; writeHash(); renderFilters(); renderResults(); };
     const opts = [el("button", { class: "opt", "aria-pressed": !state.sel[g], onclick: pick(null) }, "Any")];
     for (const o of OPTIONS[g]) {
+      if (BUTTONS[g] && !BUTTONS[g][o.value]) continue;
       opts.push(el("button", { class: "opt", "aria-pressed": state.sel[g] === o.value, onclick: pick(o.value) },
-        o.swatch ? el("span", { class: "sw", style: `background:${o.swatch}` }) : null, o.label));
+        o.swatch ? el("span", { class: "sw", style: `background:${o.swatch}` }) : null, BUTTONS[g]?.[o.value] || o.label));
     }
     box.append(el("div", { class: "group" }, el("h3", {}, MODES[state.mode].titles[g]), el("div", { class: "opts" }, ...opts)));
   }
+  const pickLight = (v) => () => { state.light = v; writeHash(); renderFilters(); renderResults(); };
+  box.append(el("div", { class: "group" }, el("h3", {}, "Lighting"), el("div", { class: "opts" },
+    el("button", { class: "opt", "aria-pressed": !state.light, onclick: pickLight(null) }, "Any"),
+    ...Object.entries(LIGHTS).map(([v, label]) =>
+      el("button", { class: "opt", "aria-pressed": state.light === v, onclick: pickLight(v) }, label)))));
 }
 
 function card(img) {
-  const tags = MODES[state.mode].groups.map((g) => {
+  const tags = MODES[state.mode].groups.map((g, n) => {
     const v = known(img, g);
+    if (!v && n > 0) return null;  // only the main group says "not visible"
     return el("span", { class: "tag" + (v ? "" : " unk") }, v ? LABELS[g][v] : `${MODES[state.mode].titles[g]} not visible`);
   });
   const src = img.thumb || img.image_url;
@@ -129,7 +144,7 @@ function renderResults() {
   $("#exact").replaceChildren();
   $("#partial").replaceChildren();
   shown = 0;
-  const any = MODES[state.mode].groups.some((g) => state.sel[g]);
+  const any = state.light || MODES[state.mode].groups.some((g) => state.sel[g]);
   $("#summary").textContent = IMAGES.length === 0 ? "" :
     `${lists.exact.length} ${any ? "matching " : ""}photo${lists.exact.length === 1 ? "" : "s"}` +
     (lists.partial.length ? `, plus ${lists.partial.length} partial match${lists.partial.length === 1 ? "" : "es"}` : "");

@@ -15,8 +15,8 @@
   {"value": "coastal-cloud", "label": "Coastal Cloud", "swatch": "#e6e1d6", "description": "Light off-white/cream seats and trim.", "aliases": ["CC", "CCS", "Coastal"]}
  ],
  "wheels": [
-  {"value": "21-liquid-tungsten", "label": "21\" Liquid Tungsten", "description": "21-inch multi-spoke wheels in a dark tungsten/grey finish with low-profile all-season tires (Performance).", "aliases": ["21s", "21\"", "LT", "LTS"]},
-  {"value": "20-black-sand-at", "label": "20\" Black Sand All-Terrain", "description": "20-inch black/dark wheels with chunky all-terrain tires with aggressive sidewall tread.", "aliases": ["AT", "A/T", "20 AT", "20", "20s", "20\""]},
+  {"value": "21-liquid-tungsten", "label": "21\" Liquid Tungsten", "description": "21-inch multi-spoke wheels in a dark tungsten/grey finish. The spokes run all the way in and join the center hub right around the lug nuts. Low-profile road tires with a thin sidewall and smooth, fine tread.", "aliases": ["21s", "21\"", "LT", "LTS"]},
+  {"value": "20-black-sand-at", "label": "20\" Black Sand All-Terrain", "description": "20-inch black wheels whose spokes stop short of the hub: they do not connect to the center near the lug nuts, leaving a gap around the center cap. Chunky all-terrain tires with blocky tread, a taller sidewall and tread blocks wrapping onto the sidewall.", "aliases": ["AT", "A/T", "20 AT", "20", "20s", "20\""]},
   {"value": "aftermarket", "label": "Aftermarket", "description": "Wheels that are clearly not a factory Rivian design."}
  ]
 }

@@ -28,7 +28,7 @@ from common import ROOT, load_env, load_images
 
 SKIP_DIRS = {".git", "__pycache__", ".venv", "venv", "node_modules"}
 SKIP_FILES = {".env"}
-SKIP_PATHS = ("data/raw/",)  # collected post text: not used by the site, kept local
+SKIP_PATHS = ("data/raw/", "references/")  # post text and tagger reference photos: not used by the site
 SKIP_SUFFIXES = (".log", ".pyc")
 API = "https://api.github.com"
 

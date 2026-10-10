@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>R2 Spotter</title>
+<meta name="description" content="See real owner photos of the Rivian R2 in the paint and interior you're considering.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <h1>R2 Spotter</h1>
+    <p class="sub">Real owner photos of the Rivian R2.</p>
+    <nav class="tabs" role="tablist">
+      <button role="tab" data-mode="exterior" aria-selected="true">Exterior</button>
+      <button role="tab" data-mode="interior" aria-selected="false">Interior</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="filters" aria-label="Filters"></section>
+  <p id="summary" class="summary" aria-live="polite"></p>
+  <div id="exact" class="grid"></div>
+  <h2 id="partial-head" class="section-head" hidden></h2>
+  <div id="partial" class="grid"></div>
+  <button id="more" class="more" hidden>Show more</button>
+</main>
+
+<footer class="wrap foot">
+  <p>Photos belong to the people who posted them on r/RivianR2 and the Rivian forums. Each one links to its original post.
+  Tags are generated automatically and can be wrong. Not affiliated with Rivian.</p>
+  <p id="updated"></p>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+ "_note": "Single source of truth for filter options. Used by the site and by tools/tag.py. 'unknown' means the tagger could not tell. aliases: shorthand owners write in posts, e.g. ES/CC/AT; fed to the tagger.",
+ "paint": [
+  {"value": "esker-silver", "label": "Esker Silver", "swatch": "#b9bcbd", "description": "Light metallic silver.", "aliases": ["ES"]},
+  {"value": "glacier-white", "label": "Glacier White", "swatch": "#f2f2ee", "description": "Solid bright white.", "aliases": ["GW"]},
+  {"value": "half-moon-grey", "label": "Half Moon Grey", "swatch": "#7d8083", "description": "Medium flat/solid grey, darker than Esker Silver.", "aliases": ["HMG", "HM"]},
+  {"value": "forest-green", "label": "Forest Green", "swatch": "#2f4a3a", "description": "Deep dark green.", "aliases": ["FG"]},
+  {"value": "midnight", "label": "Midnight", "swatch": "#1f2633", "description": "Very dark navy-black.", "aliases": ["MN"]},
+  {"value": "catalina-cove", "label": "Catalina Cove", "swatch": "#3d7aa6", "description": "Bright medium blue.", "aliases": ["CC", "Catalina"]},
+  {"value": "launch-green", "label": "Launch Green", "swatch": "#6b7b4a", "description": "Olive/khaki green from the Launch Package, lighter and yellower than Forest Green.", "aliases": ["LG"]},
+  {"value": "borealis", "label": "Borealis", "swatch": "#5b4a7a", "description": "Purple.", "aliases": ["Bor"]}
+ ],
+ "interior": [
+  {"value": "black-crater", "label": "Black Crater", "swatch": "#2a2a2a", "description": "Dark black/charcoal seats and trim.", "aliases": ["BC", "BCS", "Black Cr"]},
+  {"value": "coastal-cloud", "label": "Coastal Cloud", "swatch": "#e6e1d6", "description": "Light off-white/cream seats and trim.", "aliases": ["CC", "CCS", "Coastal"]}
+ ],
+ "wheels": [
+  {"value": "21-liquid-tungsten", "label": "21\" Liquid Tungsten", "description": "21-inch multi-spoke wheels in a dark tungsten/grey finish with low-profile all-season tires (Performance).", "aliases": ["21s", "21\"", "LT", "LTS"]},
+  {"value": "20-black-sand-at", "label": "20\" Black Sand All-Terrain", "description": "20-inch black/dark wheels with chunky all-terrain tires with aggressive sidewall tread.", "aliases": ["AT", "A/T", "20 AT", "20", "20s", "20\""]},
+  {"value": "aftermarket", "label": "Aftermarket", "description": "Wheels that are clearly not a factory Rivian design."}
+ ]
+}

@@ -1,0 +1,62 @@
+:root {
+  --bg: #f6f4ef; --surface: #ffffff; --text: #1d1f1c; --muted: #6b6d66;
+  --line: #dedbd2; --accent: #c8781e; --chip: #efece5; --shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #151614; --surface: #1f201d; --text: #ecebe6; --muted: #a09f98;
+    --line: #34352f; --accent: #f0a04b; --chip: #2a2b27; --shadow: none; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif; }
+a { color: inherit; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+.top { border-bottom: 1px solid var(--line); padding-top: 28px; }
+h1 { margin: 0; font-size: 26px; letter-spacing: -.02em; }
+.sub { margin: 4px 0 18px; color: var(--muted); }
+.tabs { display: flex; gap: 4px; }
+.tabs button { background: none; border: 0; border-bottom: 2px solid transparent; color: var(--muted);
+  font: inherit; font-weight: 600; padding: 10px 14px; cursor: pointer; }
+.tabs button[aria-selected="true"] { color: var(--text); border-color: var(--accent); }
+
+#filters { padding: 20px 0 4px; display: grid; gap: 16px; }
+.group h3 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--text); font: inherit; cursor: pointer; }
+.opt[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.sw { width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(0,0,0,.2); flex: none; }
+
+.summary { color: var(--muted); margin: 18px 0 12px; }
+.section-head { font-size: 15px; margin: 28px 0 4px; }
+.section-note { color: var(--muted); margin: 0 0 12px; font-size: 14px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+  box-shadow: var(--shadow); display: flex; flex-direction: column; }
+.card .ph { aspect-ratio: 4 / 3; background: var(--chip); display: block; }
+.card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.card .meta { padding: 10px 12px 12px; display: grid; gap: 6px; font-size: 13px; }
+.card .title { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.tag { background: var(--chip); border-radius: 4px; padding: 1px 6px; font-size: 12px; }
+.tag.unk { color: var(--muted); }
+.credit { color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+.empty { color: var(--muted); padding: 40px 0; text-align: center; grid-column: 1 / -1; }
+.more { display: block; margin: 24px auto; padding: 10px 22px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--surface); color: var(--text); font: inherit; cursor: pointer; }
+.foot { color: var(--muted); font-size: 13px; padding-top: 32px; padding-bottom: 40px; }
+
+.conf { display: flex; align-items: center; gap: 14px; margin: 0 0 20px; padding: 14px 16px; border: 1px solid var(--line);
+  border-radius: 12px; background: var(--surface); cursor: pointer; }
+.conf.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.conf input { appearance: none; flex: none; position: relative; width: 48px; height: 28px; margin: 0; border-radius: 14px;
+  background: var(--line); cursor: pointer; transition: background .15s; }
+.conf input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.3); transition: transform .15s; }
+.conf input:checked { background: var(--accent); }
+.conf input:checked::after { transform: translateX(20px); }
+.conf input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.conf strong { display: block; font-size: 16px; }
+.conf .hint { display: block; color: var(--muted); font-size: 14px; }
+.src { display: inline-flex; align-items: center; gap: 6px; margin-right: 14px; font-size: 14px; cursor: pointer; }
+.src input { width: 16px; height: 16px; margin: 0; accent-color: var(--accent); }

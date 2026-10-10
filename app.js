@@ -11,7 +11,8 @@ const MODES = {
 };
 
 let OPTIONS, IMAGES = [], LABELS = {};
-let state = { mode: "exterior", sel: {}, strict: false, hide: new Set() }, shown = 0, lists = { exact: [], partial: [] };
+const DEFAULT_HIDE = ["forum"];  // sources unticked unless the link says otherwise
+let state = { mode: "exterior", sel: {}, strict: true, hide: new Set(DEFAULT_HIDE) }, shown = 0, lists = { exact: [], partial: [] };
 
 const $ = (s) => document.querySelector(s);
 const el = (tag, attrs = {}, ...kids) => {
@@ -57,16 +58,17 @@ function readHash() {
   const [mode, q] = location.hash.slice(1).split("?");
   state.mode = MODES[mode] ? mode : "exterior";
   const params = new URLSearchParams(q || "");
-  state.strict = params.get("hc") === "1";
+  state.strict = params.get("hc") !== "0";  // on by default
   params.delete("hc");
-  state.hide = new Set((params.get("hide") || "").split(",").filter((s) => SOURCES[s]));
+  state.hide = params.has("hide") ? new Set(params.get("hide").split(",").filter((s) => SOURCES[s])) : new Set(DEFAULT_HIDE);
   params.delete("hide");
   state.sel = Object.fromEntries(params);
 }
 function writeHash() {
   const q = new URLSearchParams(Object.entries(state.sel).filter(([g, v]) => v && MODES[state.mode].groups.includes(g)));
-  if (state.strict) q.set("hc", "1");
-  if (state.hide.size) q.set("hide", [...state.hide].join(","));
+  if (!state.strict) q.set("hc", "0");
+  const hide = [...state.hide].sort().join(",");
+  if (hide !== [...DEFAULT_HIDE].sort().join(",")) q.set("hide", hide);  // "hide=" means show every source
   history.replaceState(null, "", `#${state.mode}${q.toString() ? "?" + q : ""}`);
 }
 

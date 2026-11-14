@@ -3,6 +3,12 @@
 Run by hand whenever you want new posts:
     python tools/fetch_reddit.py                 # posts since 2026-06-01
     python tools/fetch_reddit.py --since 2026-09-01
+    python tools/fetch_reddit.py --since 2026-10-10 --source arcticshift   # from the Arctic Shift archive
+
+--source arcticshift reads the same post data from Arctic Shift's public archive of Reddit
+(arctic-shift.photon-reddit.com) instead of reddit.com: no cookie, no 1000-post cap (it pages
+back by date), one request every 2-3 s. Use it when reddit.com blocks this connection. Posts
+already in posts.jsonl are skipped. Photos are still downloaded from Reddit's image hosts when tagging.
 
 Source: old.reddit.com's "new" listing plus a search per post flair (to reach past the
 listing's ~1000-post limit), in JSON form, read with a logged-in session.
@@ -22,7 +28,7 @@ from datetime import datetime, timezone
 
 import requests
 
-from common import USER_AGENT, append_posts, load_env
+from common import USER_AGENT, append_posts, load_env, read_posts
 
 S = requests.Session()
 S.headers["User-Agent"] = USER_AGENT
@@ -30,6 +36,8 @@ IMG_EXT = (".jpg", ".jpeg", ".png", ".webp")
 PAUSE = 8          # seconds between listing requests (3 s got rate-limited after ~150 requests)
 SEARCH_PAUSE = 10  # search is limited harder
 JITTER = 1.5       # +/- seconds of randomness
+ARCHIVE = "https://arctic-shift.photon-reddit.com/api/posts/search"
+ARCHIVE_PAUSE = 2.5  # its docs allow a couple of requests per second; it's a free service, so stay well under
 
 
 def images_from_json(d):
@@ -64,6 +72,18 @@ def post_record(d, imgs):
         "posted_at": int(d.get("created_utc") or 0),
         "images": imgs,
     }
+
+
+def image_post(d):
+    """Our post record for a Reddit post object, or None if it has no usable images."""
+    if d.get("removed_by_category"):
+        return None
+    if d.get("crosspost_parent_list"):  # show the original post, credited to its poster
+        d = {**d["crosspost_parent_list"][0], "created_utc": d.get("created_utc")}
+    imgs = images_from_json(d)
+    if imgs and not d.get("over_18") and not d.get("removed_by_category"):
+        return post_record(d, imgs)
+    return None
 
 
 def reset_wait(r):
@@ -117,14 +137,56 @@ def read_listing(url, params, since_ts, seen, newest_first=True):
             if d["id"] in seen:
                 continue
             seen.add(d["id"])
-            if d.get("crosspost_parent_list"):  # show the original post, credited to its poster
-                d = {**d["crosspost_parent_list"][0], "created_utc": d.get("created_utc")}
-            imgs = images_from_json(d)
-            if imgs and not d.get("over_18") and not d.get("removed_by_category"):
-                posts.append(post_record(d, imgs))
+            p = image_post(d)
+            if p:
+                posts.append(p)
         after = page.get("after")
         if not after:
             return posts
+
+
+def archive_page(params):
+    """One page of Arctic Shift search results, honouring its rate-limit headers."""
+    for attempt in range(5):
+        r = S.get(ARCHIVE, params=params, timeout=60)
+        if r.status_code in (422, 429, 500, 502, 503, 504) and attempt < 4:  # 422: its query timed out
+            try:
+                wait = min(float(r.headers["x-ratelimit-reset"]) + 2, 600) if r.status_code == 429 else 15 * (attempt + 1)
+            except (KeyError, ValueError):
+                wait = 60
+            print(f"  archive returned {r.status_code}; waiting {wait:.0f} s")
+            time.sleep(wait)
+            continue
+        r.raise_for_status()
+        try:
+            low = float(r.headers.get("x-ratelimit-remaining", "99")) < 3
+            wait = float(r.headers.get("x-ratelimit-reset", "60")) + 2 if low else ARCHIVE_PAUSE + random.uniform(-0.5, 0.5)
+        except ValueError:
+            wait = ARCHIVE_PAUSE
+        time.sleep(min(wait, 600))
+        return r.json().get("data") or []
+
+
+def fetch_archive(sub, since_ts):
+    """Image posts from Arctic Shift's archive of the subreddit, paging back by date from now to since_ts."""
+    posts, seen, before, n = [], set(), None, 0
+    while True:
+        page = archive_page({"subreddit": sub, "after": since_ts, "limit": 100, "sort": "desc",
+                             **({"before": before} if before else {})})
+        fresh = [d for d in page if d["id"] not in seen]
+        for d in fresh:
+            seen.add(d["id"])
+            p = image_post(d)
+            if p:
+                posts.append(p)
+        n += 1
+        if page:
+            oldest = min(int(d["created_utc"]) for d in page)
+            print(f"  page {n}: {len(page)} posts back to {datetime.fromtimestamp(oldest, timezone.utc):%Y-%m-%d %H:%M}, "
+                  f"{len(posts)} image posts so far")
+        if len(page) < 100 or not fresh:
+            return posts
+        before = oldest + 1  # +1: posts sharing the oldest second come back and are skipped as seen
 
 
 # Keyword searches and other listings each have their own ~1000-post window too.
@@ -167,8 +229,20 @@ def main():
     ap.add_argument("--subreddit", default="RivianR2")
     ap.add_argument("--since", default="2026-06-01", help="only posts on/after this date, YYYY-MM-DD")
     ap.add_argument("--from", dest="start_at", help='start at this listing, e.g. "search tires (top)" from a stopped run')
+    ap.add_argument("--source", choices=("reddit", "arcticshift"), default="reddit",
+                    help="reddit.com with a session cookie (default), or the Arctic Shift archive")
     args = ap.parse_args()
     since = int(datetime.strptime(args.since, "%Y-%m-%d").replace(tzinfo=timezone.utc).timestamp()) if args.since else None
+
+    if args.source == "arcticshift":
+        if not since:
+            sys.exit("--source arcticshift needs --since.")
+        known = read_posts()
+        found = fetch_archive(args.subreddit, since)
+        posts = [p for p in found if p["id"] not in known]
+        added = append_posts(posts)
+        print(f"Found {len(found)} image posts, {len(found) - len(posts)} already collected, {added} new.")
+        return
 
     load_env()
     cookie = os.environ.get("REDDIT_SESSION")

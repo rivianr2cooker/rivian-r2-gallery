@@ -26,7 +26,12 @@ pip install -r tools/requirements.txt
 
 # 1. Collect image posts (no Reddit API: uses a public archive + old.reddit pages)
 python tools/fetch_reddit.py --since 2026-09-01
+python tools/fetch_reddit.py --since 2026-09-01 --source arcticshift   # if reddit.com blocks you: public archive
 python tools/fetch_forum.py --pages 2   # R2 forum + subforums on rivianforums.com
+
+# Newer runs: tag only the new photos with the reference-photo tagger, then check them for faces/personal info
+python tools/tag_new.py --since 2026-09-01
+python tools/pii_check.py
 
 # 2. Tag them with OpenAI's Decisions API (only untagged images are sent).
 #    Needs OPENAI_API_KEY=sk-... in the .env file next to this README.
